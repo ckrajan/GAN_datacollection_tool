@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+    integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+    integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="static/main.css">
+  <title>GAN tool - Step 1</title>
+</head> 
+
+<body>
+  <br>
+
+  <!-- <a href="http://localhost:8080/upload" id="step1" style="position:absolute; margin-top:10px; margin-left:80px;">Step 1</a>
+  <a href="http://localhost:8080/compare" id="step1" style="position:absolute; margin-top:10px; margin-left:200px;">Step 2</a> -->
+
+  <br>
+  <br>
+
+  <form action="/action_page.php" id="name">
+    <label for="fname">User name:</label>
+    <input type="text" id="fname" name="fname" required><br>
+    <label for="lang">Language:</label>
+    <select name="lang" id="lang">
+      <option value="tamil">tamil</option>
+      <option value="telugu">telugu</option>
+    </select>
+  </form>
+
+  <h3 class="w3-center" style="color:rgb(78, 13, 163); text-align: center;">STEP 1: Upload a video to split<h3>
+
+    <div id="browse_upload">
+    <label style="font-size: 15px;" for="folder">Select folder</label>
+      <input type="file" style="font-size: 20px;" id="upload" accept="video/mp4,video/x-m4v,video/*" enabled>
+      <a id="upload-button" class="cameratag_prompt_label cam_icon upload_icon"></a>
+      </div>
+
+      <div id="screen" class="w3-content w3-display-container">
+
+        <div id="play_video"></div>
+
+        <div id="loader" style="display:none;"></div>
+
+        <button id="upload-s3" style="display:none;position:absolute; margin-top:600px; margin-left:350px;" onclick="enterName()">Upload the video <i
+            class="fa fa-check"></i></button>
+
+</body>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+  integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="static/upload.js"></script>
+
+</html>

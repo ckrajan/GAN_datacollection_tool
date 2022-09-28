@@ -1,0 +1,131 @@
+import datetime
+import json
+import random
+import string
+from pip import main
+from flask import Flask, render_template, request, make_response
+import boto3
+import os
+import transcribe as ts
+from flask_cors import CORS
+import time
+import shutil
+
+from moviepy.editor import *
+
+bucket_name = os.environ.get("bucket_name")
+ACCESS_KEY = os.environ.get("ACCESS_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+
+REGION = 'us-east-1'
+
+s3_client = boto3.client(
+    's3',
+    region_name=REGION,
+    aws_access_key_id=ACCESS_KEY,
+    aws_secret_access_key=SECRET_KEY,
+)
+
+app = Flask(__name__, static_url_path='/static')
+CORS(app)
+
+@app.route('/upload')
+def aws_trancribe():
+    return render_template('upload.html')
+
+@app.route('/compare')
+def compare_tool():
+    return render_template('compare.html')
+
+@app.route('/start_transcribe', methods=["POST"])
+def start_transcribe():
+    json_body = request.get_json()
+    video_id = json_body['video_id']
+    filename = json_body['filename']
+    language = json_body['language']
+    job_id = video_id
+    return ts.create_transcribe_job(job_id, video_id, filename, language)
+
+@app.route('/get_transcribe_results', methods=["POST"])
+def get_transcribe_results():
+    json_body = request.get_json()
+    job_id = json_body['job_id']
+    file = json_body['file']
+    return ts.get_transcribe_result(job_id, file)
+
+#Get S3 Signed URLs
+@app.route("/get_signed_s3_urls", methods=["POST"])
+def get_signed_s3_urls():
+    json_body = request.get_json()
+    #content = request.json
+    response = create_presigned_url(json_body['video_id'],json_body['filename'])
+    return response
+
+def create_presigned_url(video_id, object):
+    try:
+        key = object
+        key = '{}/{}'.format(video_id,key)
+        print(key)
+        url = s3_client.generate_presigned_url(
+                ClientMethod='put_object',
+                Params={'Bucket': bucket_name, 'Key': key },
+                ExpiresIn=600000,
+            )
+        print("signed url: ",url)
+                        
+    except boto3.ClientError as e:
+        print(e)
+        return None
+    return url  
+
+
+@app.route("/yes_no_files", methods=['POST'])
+def yes_no_files():
+    json_body = request.get_json()
+    yes_dict = json_body['yes_dict']
+    no_dict = json_body['no_dict']
+    text_type = json_body['text_type']
+
+    if(text_type == "word"):
+        os.mkdir('yes_files_word')
+        os.mkdir('no_files_word')
+
+        for yes in yes_dict:
+            yes_key = yes['key']
+            yes_value = yes['value']
+            shutil.copy("static/videos/"+yes_key, 'yes_files_word/'+yes_value+".mp4")
+
+        for no in no_dict:
+            no_key = no['key']
+            no_value = no['value']
+            shutil.copy("static/videos/"+no_key, 'no_files_word/'+no_value+".mp4")
+
+
+    elif(text_type == "letter"):
+        os.mkdir('yes_files_letter')
+        os.mkdir('no_files_letter')
+
+        for yes in yes_dict:
+            yes_key = yes['key']
+            yes_value = yes['value']
+            shutil.copy("static/videos/"+yes_key, 'yes_files_letter/'+yes_value+".mp4")
+
+        for no in no_dict:
+            no_key = no['key']
+            no_value = no['value']
+            shutil.copy("static/videos/"+no_key, 'no_files_letter/'+no_value+".mp4")
+
+
+
+# @app.route("/upload", methods=['POST'])
+# def upload_file():
+#     file_to_upload = request.files['file'].read()
+#     filename= request.form["filename"]
+#     print("filename::",filename)
+#     with open(filename, 'wb') as f: 
+#         f.write(file_to_upload)
+#     o = open(filename, "r")
+#     return get_transcribe_result("job_id", filename, o)
+
+if __name__ == '__main__':
+    app.run(port=8080, debug=True)

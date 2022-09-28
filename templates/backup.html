@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+    integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+    integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link rel="stylesheet" href="static/main.css">
+</head>
+<title>GAN tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+  .mySlides {
+    display: none;
+  }
+</style>
+
+<body>
+  <h3 class="w3-center" style="color:rgb(78, 13, 163)">Compare video with text</h3>
+
+  <div class="w3-content w3-display-container">
+    <video class="mySlides" src="static/videos/maheshbabu_telugu.mp4" playsinline style="
+                          width: 800px;
+                          margin:100px;
+                          height: 500px;
+                          " controls></video>
+
+    <video class="mySlides" src="static/videos/Valimai.mp4" playsinline style="
+    width: 800px;
+    margin:100px;
+    height: 500px;
+    " controls></video>
+
+    <button class="w3-button w3-blue w3-display-left" onclick="plusDivs(-1)">&#10094;</button>
+    <button class="w3-button w3-blue w3-display-right" onclick="plusDivs(1)">&#10095;</button>
+
+    <div class="w3-display-center w3-container w3-padding-16 w3-blue">
+      Transcribe Text
+    </div>
+
+    <div class="control_btns mt-4">
+      <button id="yes-button" class="btn">Yes</button>
+      <button id="no-button" class="btn">No</button>
+    </div>
+
+  </div>
+
+  <script>
+    var slideIndex = 1;
+    showDivs(slideIndex);
+
+    function plusDivs(n) {
+      showDivs(slideIndex += n);
+    }
+
+    function showDivs(n) {
+      var i;
+      var x = document.getElementsByClassName("mySlides");
+      if (n > x.length) { slideIndex = 1 }
+      if (n < 1) { slideIndex = x.length }
+      for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
+      }
+      x[slideIndex - 1].style.display = "block";
+    }
+  </script>
+
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+  integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="static/process.js"></script>
+
+</html>
+
+
+----------------------------------
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+    integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+    integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link rel="stylesheet" href="static/main.css">
+</head>
+<title>GAN tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+
+<body>
+<br>
+  <h3 class="w3-center" style="color:rgb(78, 13, 163)">GAN data collection tool</h3>
+  ----<label for="folder">Select folder</label>
+  <input type="file" id="folder" webkitdirectory multiple />
+
+  <div class="w3-content w3-display-container">
+
+    <div id="play_video"></div>
+
+    <button id="prev" class="w3-button w3-blue w3-display-left">&#10094;</button>
+    <button id="next" class="w3-button w3-blue w3-display-right">&#10095;</button>
+
+    <div class="w3-display-center w3-container w3-padding-16 w3-blue">
+      Transcribe Text
+    </div>
+
+    <div class="control_btns mt-4">
+      <button id="yes-button" class="btn">Yes</button>
+      <button id="no-button" class="btn">No</button>
+    </div>
+
+  </div>
+
+  <script>
+    var video_list;
+    var files;
+    var count = 0;
+    var vid_start_count;
+
+    document.getElementById("folder").addEventListener("change", function (event) {
+      // var output = document.querySelector("ul");
+      files = event.target.files;
+      video_list = files.length;
+      for (count = 0; count <= video_list; count++) {
+        if (files[count].type == "video/mp4") {
+          vid_start_count = count;
+          video.src = files[count].webkitRelativePath;
+          break;
+        }
+      }
+
+
+    }, false);
+
+
+    const video = document.createElement('video');
+
+    // video.poster =
+    //   'https://pbs.twimg.com/profile_images/1076488288658120705/p5D676cI_400x400.jpg';
+
+    video.autoplay = false;
+    video.controls = true;
+    video.muted = false;
+    video.height = 500;
+    video.width = 800;
+    video.position= "relative";
+    video.style.margin = "50px 80px";
+    video.style.padding = "5px";
+    var box = document.getElementById('play_video');
+    box.appendChild(video);
+
+
+    
+    var next = document.getElementById('next');
+    var prev = document.getElementById('prev');
+
+    next.addEventListener('click', myHandler1);
+
+    function myHandler1(e) {
+
+      if (!e) {
+        e = window.event;
+      }
+
+      count++;
+      if (count < video_list) {
+        video.src = files[count].webkitRelativePath;
+        video.load();
+        // video.play();
+      }
+      else {
+        video.src = files[vid_start_count].webkitRelativePath;
+        count = vid_start_count;
+      }
+    }
+
+    prev.addEventListener('click', myHandler2);
+
+    function myHandler2(e) {
+
+      if (!e) {
+        e = window.event;
+      }
+
+      count--;
+      if (count >= vid_start_count) {
+        video.src = files[count].webkitRelativePath;
+        video.load();
+        // video.play();
+      }
+      else {
+        video.src = files[video_list-1].webkitRelativePath;
+        count = video_list-1;
+      }
+    }
+
+
+  </script>
+
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+  integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="static/process.js"></script>
+
+
+</html>
+
+----------------------------------
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+    integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+    integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link rel="stylesheet" href="static/main.css">
+</head>
+<title>GAN tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+
+<body>
+  <br>
+  <h3 class="w3-center" style="color:rgb(78, 13, 163)">GAN data collection tool</h3>
+  ----<label for="folder">Select folder</label>
+  <input type="file" id="folder" webkitdirectory multiple />
+
+  <div id="screen" class="w3-content w3-display-container">
+
+    <div id="play_video"></div>
+
+    <button id="prev" class="w3-button w3-blue w3-display-left">&#10094;</button>
+    <button id="next" class="w3-button w3-blue w3-display-right">&#10095;</button>
+
+    <!---Pagination-->
+    <section class='app-container'>
+      <ul class='list'>
+
+      </ul>
+      <div class='pagination__wrapper' id="pagi">
+        <section class='pagination__items'>
+          <button class='pagination__navigate-btn' onclick='firstPage()'>First</button>
+          <button class='pagination__navigate-btn' onclick='prevPage()'>Prev</button>
+          <ul class='pagination__pages'>
+
+          </ul>
+          <button class='pagination__navigate-btn' onclick='nextPage()'>Next</button>
+          <button class='pagination__navigate-btn' onclick='lastPage()'>Last</button>
+        </section>
+      </div>
+    </section>
+
+    <div id="transcribe_txt" class="w3-display-center w3-container w3-padding-16 w3-pale-blue"
+      style="font-weight: bold; font-family: monospace; text-align:center; font-size:120%;">
+      Transcribe Text
+    </div>
+
+    <div class="control_btns mt-4">
+      <button id="yes-button" class="btn">Yes</button>
+      <button id="no-button" class="btn">No</button>
+    </div>
+
+  </div>
+
+  <script>
+    var video_list;
+    var files;
+    var count = 0;
+    var vid_start_count;
+
+    document.getElementById("folder").addEventListener("change", function (event) {
+      // var output = document.querySelector("ul");
+      files = event.target.files;
+      video_list = files.length;
+
+
+      //Pagination
+      // Records to paginate on 
+      const records = [
+        ...Array(parseInt(video_list)*58)
+          .fill("")
+          .map((val, index) => `Name-${val - index}`)
+      ];
+
+
+      // Paginator Class
+      class Paginator {
+        #recordsPerPage;
+        #totalRecords;
+        #noOfPages;
+        #visiblePages;
+        #activePage;
+        #visiblePagesEndRange;
+        constructor(totalRecords, recordsPerPage = 1, visiblePages = 1) {
+          this.#recordsPerPage = recordsPerPage;
+          this.#totalRecords = totalRecords;
+          this.#noOfPages = Math.ceil(this.#totalRecords / this.#recordsPerPage);
+          this.#visiblePages = visiblePages;
+          this.#activePage = 1;
+          this.#visiblePagesEndRange = visiblePages;
+          // below validations can be improved and really not necessary for bare minimum pagination but 🤷‍♂️
+          this.#validate();
+        }
+
+        #validate() {
+          if (this.#recordsPerPage <= 0) {
+            this.#recordsPerPage = 1;
+          }
+          if (this.#visiblePages <= 0) {
+            this.#visiblePages = 1;
+          }
+          if (this.#totalRecords <= 0) {
+            this.#totalRecords = 1;
+          }
+          if (this.#noOfPages <= 0) {
+            this.#noOfPages = Math.ceil(this.#totalRecords / this.#recordsPerPage);
+          }
+          if (this.#visiblePagesEndRange <= 0) {
+            this.#visiblePagesEndRange = this.#visiblePages;
+          }
+          if (this.#visiblePages > this.#noOfPages) {
+            this.#visiblePages = this.#noOfPages;
+            this.#visiblePagesEndRange = this.#visiblePages;
+          }
+          if (this.#recordsPerPage > this.#totalRecords) {
+            this.#recordsPerPage = this.#totalRecords;
+          }
+        }
+
+        getActivePage() {
+          return this.#activePage;
+        }
+
+        gotoNextPage() {
+          count++;
+          if (count < video_list) {
+            video.src = files[count].webkitRelativePath;
+            document.getElementById("transcribe_txt").innerHTML = files[count].name.replace('.mp4', '');
+            video.load();
+            // video.play();
+          }
+          else {
+            video.src = files[video_list - 1].webkitRelativePath;
+            document.getElementById("transcribe_txt").innerHTML = files[video_list - 1].name.replace('.mp4', '');
+            count = video_list - 1;
+          }
+
+          if (this.#activePage < this.#noOfPages) {
+            this.#activePage += 6;
+
+            if (this.#activePage > this.#visiblePagesEndRange) {
+              this.#visiblePagesEndRange += this.#visiblePages;
+              this.#visiblePagesEndRange = Math.min(this.#visiblePagesEndRange, this.#noOfPages);
+            }
+          }
+        }
+
+        gotoPrevPage() {
+          count--;
+          if (count >= vid_start_count) {
+            video.src = files[count].webkitRelativePath;
+            document.getElementById("transcribe_txt").innerHTML = files[count].name.replace('.mp4', '');
+            video.load();
+            // video.play();
+          }
+          else {
+            video.src = files[vid_start_count].webkitRelativePath;
+            document.getElementById("transcribe_txt").innerHTML = files[vid_start_count].name.replace('.mp4', '');
+            count = vid_start_count;
+          }
+
+          if (this.#activePage > 6) {
+            this.#activePage -= 6;
+            if (this.#activePage < this.#visiblePagesEndRange) {
+              this.#visiblePagesEndRange -= this.#visiblePages;
+              this.#visiblePagesEndRange = Math.min(this.#visiblePagesEndRange, this.#noOfPages);
+            }
+          }
+        }
+
+        gotoFirstPage() {
+          video.src = files[vid_start_count].webkitRelativePath;
+          document.getElementById("transcribe_txt").innerHTML = files[vid_start_count].name.replace('.mp4', '');
+          count = vid_start_count;
+
+          this.#activePage = 1;
+          this.#visiblePagesEndRange = this.#visiblePages;
+        }
+
+        gotoLastPage() {
+          video.src = files[video_list - 1].webkitRelativePath;
+          document.getElementById("transcribe_txt").innerHTML = files[video_list - 1].name.replace('.mp4', '');
+          count = video_list - 1;
+
+          this.#activePage = this.#noOfPages;
+          this.#visiblePagesEndRange = this.#noOfPages;
+        }
+
+        gotoPage(page) {
+          this.#activePage = page;
+        }
+
+        getVisiblePagesRange() {
+          let beginningVisiblePage;
+          let endingVisiblePage;
+          //  When the visiblepagesendrange % visiblepages is not zero (which means that all the pages cannot be fit in the visible pages range) then the beginning would be equivalent to visble page range - ((visible page range mod visiblepage range) - 1).
+          if (this.#visiblePagesEndRange % this.#visiblePages !== 0) {
+            beginningVisiblePage =
+              this.#visiblePagesEndRange - (this.#visiblePagesEndRange % this.#visiblePages) + 1;
+          }
+          // else we are always in a place where, current visible page end range - visible page range + 1 will return us the correct beginning position for the page range.
+          else {
+            beginningVisiblePage = this.#visiblePagesEndRange - this.#visiblePages + 1;
+          }
+          //Also endingActivePage would be simply equal visiblePagesEndRange.
+          endingVisiblePage = this.#visiblePagesEndRange;
+          return {
+            beginningVisiblePage,
+            endingVisiblePage
+          };
+        }
+
+        getActiveRecordsIndices() {
+          // the beginning page index will be current active page multiplied by no of records.
+          let beginningRecordIndex = (this.#activePage - 1) * this.#recordsPerPage;
+          // the ending page index will be minimum of total records and (beginning + records allowed per page);
+          let endingRecordIndex = Math.min(
+            beginningRecordIndex + this.#recordsPerPage,
+            this.#totalRecords
+          );
+          return { beginningRecordIndex, endingRecordIndex };
+        }
+      }
+
+      // All the render and using Paginator class logic comes here
+      (function () {
+        function nextPage() {
+          paginator.gotoNextPage();
+          render();
+        }
+
+        function prevPage() {
+          paginator.gotoPrevPage();
+          render();
+        }
+
+        function lastPage() {
+          paginator.gotoLastPage();
+          render();
+        }
+
+        function firstPage() {
+          paginator.gotoFirstPage();
+          render();
+        }
+
+        // Delegating event to the parent ul.
+        function gotoPage(event) {
+          if (event.target.nodeName === "BUTTON") {
+            const page = parseInt(event.target.dataset.item);
+            paginator.gotoPage(page);
+            render();
+          }
+        }
+
+        const paginationPages = document.querySelector(".pagination__pages");
+
+        paginationPages.addEventListener("click", gotoPage);
+
+        /* paginator object 
+        list which is of length 346
+        recordsPerPage = 6
+        visiblePages = 6  
+        */
+        const paginator = new Paginator(records.length, 6, 6);
+
+        // Method to render the pagination buttons;
+        function renderPages() {
+          const paginationPages = document.querySelector(".pagination__pages");
+          let html = "";
+          let {
+            beginningVisiblePage,
+            endingVisiblePage
+          } = paginator.getVisiblePagesRange();
+          for (let page = beginningVisiblePage; page <= endingVisiblePage; page++) {
+            const pageClass =
+              paginator.getActivePage() === page
+                ? "pagination__page-btn--active"
+                : "pagination__page-btn";
+            html += `<li class='pagination__page'>
+   <button data-item=${page} class=${pageClass}>${page}</button>
+     </li>`;
+          }
+          paginationPages.innerHTML = html;
+        }
+
+        // Method to render the list items
+        function renderList() {
+          const list = document.querySelector(".list");
+          const {
+            beginningRecordIndex,
+            endingRecordIndex
+          } = paginator.getActiveRecordsIndices();
+          // let html = "";
+          // for (let index = beginningRecordIndex; index < endingRecordIndex; index++) {
+          //   html += `<li class='list__item'>${records[index]}</li>`;
+          // }
+          // list.innerHTML = html;
+        }
+
+        // Main render function
+        function render() {
+          renderPages();
+          renderList();
+        }
+
+        render();
+
+        this.firstPage = firstPage;
+        this.lastPage = lastPage;
+        this.nextPage = nextPage;
+        this.prevPage = prevPage;
+        this.gotoPage = gotoPage;
+      })();
+
+
+
+
+      for (count = 0; count <= video_list; count++) {
+        if (files[count].type == "video/mp4") {
+          vid_start_count = count;
+          video.src = files[count].webkitRelativePath;
+          document.getElementById("transcribe_txt").innerHTML = files[count].name.replace('.mp4', '');
+          break;
+        }
+      }
+
+
+    }, false);
+
+    const video = document.createElement('video');
+
+    // video.poster =
+    //   'https://pbs.twimg.com/profile_images/1076488288658120705/p5D676cI_400x400.jpg';
+
+    video.autoplay = false;
+    video.controls = true;
+    video.muted = false;
+    video.height = 500;
+    video.width = 800;
+    video.position = "relative";
+    video.style.margin = "50px 80px";
+    video.style.padding = "5px";
+    var box = document.getElementById('play_video');
+    box.appendChild(video);
+
+    var next = document.getElementById('next');
+    var prev = document.getElementById('prev');
+
+    next.addEventListener('click', myHandler_next);
+    function myHandler_next(e) {
+      nextPage();
+
+      if (!e) {
+        e = window.event;
+      }
+
+      count++;
+      if (count < video_list) {
+        video.src = files[count].webkitRelativePath;
+        document.getElementById("transcribe_txt").innerHTML = files[count].name.replace('.mp4', '');
+        video.load();
+        // video.play();
+      }
+      else {
+        video.src = files[video_list - 1].webkitRelativePath;
+        document.getElementById("transcribe_txt").innerHTML = files[video_list - 1].name.replace('.mp4', '');
+        count = video_list - 1;
+        // video.src = files[vid_start_count].webkitRelativePath;
+        // document.getElementById("transcribe_txt").innerHTML = files[vid_start_count].name.replace('.mp4','');
+        // count = vid_start_count;
+      }
+    }
+
+    prev.addEventListener('click', myHandler_prev);
+    function myHandler_prev(e) {
+      prevPage();
+
+      if (!e) {
+        e = window.event;
+      }
+
+      count--;
+      if (count >= vid_start_count) {
+        video.src = files[count].webkitRelativePath;
+        document.getElementById("transcribe_txt").innerHTML = files[count].name.replace('.mp4', '');
+        video.load();
+        // video.play();
+      }
+      else {
+        video.src = files[vid_start_count].webkitRelativePath;
+        document.getElementById("transcribe_txt").innerHTML = files[vid_start_count].name.replace('.mp4', '');
+        count = vid_start_count;
+        // video.src = files[video_list-1].webkitRelativePath;
+        // document.getElementById("transcribe_txt").innerHTML = files[video_list-1].name.replace('.mp4','');
+        // count = video_list-1;
+      }
+    }
+
+  </script>
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+  integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="static/process.js"></script>
+
+</html>
