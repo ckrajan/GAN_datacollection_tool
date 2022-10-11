@@ -12,6 +12,8 @@ import time
 import shutil
 
 from moviepy.editor import *
+import regex
+import cv2
 
 bucket_name = os.environ.get("bucket_name")
 ACCESS_KEY = os.environ.get("ACCESS_KEY")
@@ -89,11 +91,63 @@ def yes_no_files():
     if(text_type == "word"):
         os.mkdir('yes_files_word')
         os.mkdir('no_files_word')
+        os.mkdir('split_by_letters')
+        os.mkdir('split_by_letters/frames')
+        count = 0
 
         for yes in yes_dict:
             yes_key = yes['key']
             yes_value = yes['value']
             shutil.copy("static/videos/"+yes_key, 'yes_files_word/'+yes_value+".mp4")
+
+            cap = cv2.VideoCapture('yes_files_word/'+yes_value+".mp4")
+            fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+            cap_width = int(cap.get(3))
+            cap_height = int(cap.get(4))
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            approx_frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            print("Total frames: {}".format(approx_frame_count))
+
+            for text in [yes_value.encode('utf-8')]:
+                letter_lst = regex.findall(r'\X', text.decode("utf-8"), regex.U)
+                letter_len = len(letter_lst)
+                split_time = approx_frame_count / letter_len
+
+                for lett in letter_lst:
+                    running = True
+                    frame_counter = 1
+                    if not os.path.exists('split_by_letters/frames/'+ lett):
+                        os.mkdir('split_by_letters/frames/'+ lett)
+                        out = cv2.VideoWriter("split_by_letters/" + lett + ".mp4", fourcc, fps, (cap_width, cap_height))
+
+                        while running:
+                            ret, frame = cap.read()
+                            cv2.imwrite("split_by_letters/frames/%s/%d.jpg" % (lett,frame_counter), frame)
+                            image = cv2.imread(os.path.join("split_by_letters/frames/%s/%d.jpg" % (lett,frame_counter)))
+                            
+                            out.write(image)
+                            frame_counter = frame_counter + 1  
+                            if(frame_counter > split_time):
+                                running = False
+                                out.release()
+
+                    else:
+                        count = count + 1
+                        os.mkdir('split_by_letters/frames/'+ lett+'_'+str(count))
+                        out = cv2.VideoWriter("split_by_letters/" + lett + '_' + str(count) + ".mp4", fourcc, fps, (cap_width, cap_height))
+
+                        while running:
+                            ret, frame = cap.read()
+                            cv2.imwrite("split_by_letters/frames/%s_%s/%d.jpg" % (lett,str(count),frame_counter), frame)
+                            image = cv2.imread(os.path.join("split_by_letters/frames/%s_%s/%d.jpg" % (lett,str(count),frame_counter)))
+
+                            out.write(image)
+                            frame_counter = frame_counter + 1  
+                            if(frame_counter > split_time):
+                                running = False
+                                out.release()
+
+
 
         for no in no_dict:
             no_key = no['key']
